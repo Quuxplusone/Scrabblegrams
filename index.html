@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Scrabblegrams</title>
+</head>
+<body>
+  <h2>Scrabblegrams</h2>
+  <table>
+    <tr>
+      <td>
+        Type your entry here.<br/>
+        <textarea id="your-entry" cols="80" rows="10"></textarea>
+      </td>
+      <td>
+        You must get rid of these letters.<br/>
+        <textarea id="bogus-letters" cols="40" rows="10" readonly="true" style="text-transform:uppercase; color:red;"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        You must incorporate these letters.<br/>
+        <textarea id="unused-letters" cols="60" rows="5" readonly="true" style="text-transform:uppercase;"></textarea>
+        <button id="shuffle-unused">Click here to shuffle these letters.</button>
+      </td>
+      <td>
+        <button id="reset-slurp">Click here to reset the anagram source to your current entry.</button>
+        <button id="reset-scrabble">Click here to reset the anagram source to the 98 non-blank Scrabble tiles.</button>
+      </td>
+    </tr>
+  </table>
+  <script type="text/javascript">
+    function sortLetters(text) {
+      text = text.toLowerCase();
+      let a = [];
+      for (let i = 0; i < text.length; ++i) {
+        if ('a' <= text[i] && text[i] <= 'z') {
+          a.push(text[i]);
+        }
+      }
+      return a.sort().join("");
+    };
+    function setDifference(s, t) {
+      let i = 0;
+      let j = 0;
+      let out = [];
+      while (i < s.length) {
+        if (j == t.length || s[i] < t[j]) {
+          out.push(s[i++]);
+        } else if (s[i] == t[j]) {
+          ++i;
+          ++j;
+        } else {
+          ++j;
+        }
+      }
+      return out.join("");
+    };
+    function resetScrabble() {
+      window.totalLetters = "aaaaaaaaabbccddddeeeeeeeeeeeeffggghhiiiiiiiiijkllllmmnnnnnnooooooooppqrrrrrrssssttttttuuuuvvwwxyyz";
+      recomputeTextAreas();
+    };
+    function resetSlurp() {
+      window.totalLetters = sortLetters(document.getElementById("your-entry").value);
+      recomputeTextAreas();
+    };
+    function shuffleUnused() {
+      let v = sortLetters(document.getElementById("your-entry").value);
+      let unused = setDifference(window.totalLetters, v).split("");
+      console.log(unused);
+      for (let i = unused.length - 1; i > 0; --i) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [unused[i], unused[j]] = [unused[j], unused[i]];
+      }
+      console.log(unused);
+      document.getElementById("unused-letters").value = unused.join("");
+    };
+    function recomputeTextAreas() {
+      let v = sortLetters(document.getElementById("your-entry").value);
+      document.getElementById("bogus-letters").value = setDifference(v, window.totalLetters);
+      let unused = setDifference(window.totalLetters, v);
+      let origUnused = document.getElementById("unused-letters").value;
+      if (sortLetters(origUnused) != unused) {
+        document.getElementById("unused-letters").value = unused;
+      }
+    };
+    window.requestAnimationFrame(function () {
+      resetScrabble();
+      document.getElementById("your-entry").addEventListener("input", recomputeTextAreas);
+      document.getElementById("reset-slurp").addEventListener("click", resetSlurp);
+      document.getElementById("reset-scrabble").addEventListener("click", resetScrabble);
+      document.getElementById("shuffle-unused").addEventListener("click", shuffleUnused);
+    });
+  </script>
+</body>
+</html>
